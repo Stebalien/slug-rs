@@ -1,0 +1,16 @@
+[package]
+name = "slug"
+keywords = ["slugify", "slug", "id"]
+version = "0.1.0"
+authors = ["Steven Allen <steven@stebalien.com>"]
+
+description = "Convert a unicode string to a slug"
+license = "MIT"
+readme = "README.md"
+
+repository = "https://github.com/Stebalien/slug-rs"
+homepage = "https://github.com/Stebalien/slug-rs"
+documentation = "https://stebalien.github.io/slug-rs/slug"
+
+[dependencies]
+unidecode="*"
