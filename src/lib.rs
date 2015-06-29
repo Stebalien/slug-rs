@@ -1,5 +1,6 @@
 extern crate unidecode;
-use unidecode::unidecode;
+use unidecode::unidecode_char;
+use std::ascii::AsciiExt;
 
 /// Convert any unicode string to an ascii "slug" (useful for file names/url components)
 ///
@@ -17,40 +18,54 @@ use unidecode::unidecode;
 /// assert_eq!(slugify("user@example.com"), "user-at-example-com");
 /// ```
 pub fn slugify<S: AsRef<str>>(s: S) -> String {
-    let s = unidecode(s.as_ref());
-    let mut output = String::with_capacity(s.len());
-    let mut dash = true;
-    for c in s.chars() {
-        match c {
-            'a'...'z'|'0'...'9'|'A'...'Z' => {
-                match c {
-                    'a'...'z'|'0'...'9' => output.push(c),
-                    'A'...'Z' => output.push(((c as u8)-('A' as u8)+('a' as u8)) as char),
-                    _ => unreachable!(),
+    let s = s.as_ref();
+    let mut string = String::with_capacity(s.len());
+    {
+        let output = unsafe { string.as_mut_vec() };
+        let mut dash = true;
+
+        let mut push_char = |c: char| {
+            match c {
+                'a'...'z'|'0'...'9'|'A'...'Z' => {
+                    match c {
+                        'a'...'z'|'0'...'9' => output.push(c as u8),
+                        'A'...'Z' => output.push((c as u8)-('A' as u8)+('a' as u8)),
+                        _ => unreachable!(),
+                    }
+                    dash = false;
+                },
+                _ => if dash {
+                    match c {
+                        '@' => output.extend(b"at-"),
+                        '&' => output.extend(b"and-"),
+                        _ => {}
+                    }
+                } else {
+                    match c {
+                        '@' => output.extend(b"-at-"),
+                        '&' => output.extend(b"-and-"),
+                        _ => output.push(b'-'),
+                    }
+                    dash = true;
                 }
-                dash = false;
-            },
-            _ => if dash {
-                match c {
-                    '@' => output.push_str("at-"),
-                    '&' => output.push_str("and-"),
-                    _ => {}
-                }
+            }
+        };
+        for c in s.chars() {
+            if c.is_ascii() {
+                (push_char)(c);
             } else {
-                match c {
-                    '@' => output.push_str("-at-"),
-                    '&' => output.push_str("-and-"),
-                    _ => output.push('-'),
+                for c in unidecode_char(c).chars() {
+                    (push_char)(c);
                 }
-                dash = true;
             }
         }
     }
 
-    if output.ends_with('-') {
-        output.pop();
+    if string.ends_with('-') {
+        string.pop();
     }
 
-    output.shrink_to_fit();
-    output
+    // We likely reserved more space than needed.
+    string.shrink_to_fit();
+    string
 }
