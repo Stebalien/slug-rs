@@ -14,4 +14,4 @@ documentation = "https://stebalien.github.io/slug-rs/slug"
 
 [dependencies.unidecode]
 # TODO: use upstream once they switch to a table (and provide unidecode_char).
-git = "https://gitbub.com/Stebalien/rust-unidecode.git"
+git = "https://github.com/Stebalien/rust-unidecode.git"
