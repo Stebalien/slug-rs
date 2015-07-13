@@ -12,6 +12,5 @@ repository = "https://github.com/Stebalien/slug-rs"
 homepage = "https://github.com/Stebalien/slug-rs"
 documentation = "https://stebalien.github.io/slug-rs/slug"
 
-[dependencies.unidecode]
-# TODO: use upstream once they switch to a table (and provide unidecode_char).
-git = "https://github.com/Stebalien/rust-unidecode.git"
+[dependencies]
+unidecode = "*"
