@@ -26,27 +26,29 @@ pub fn slugify<S: AsRef<str>>(s: S) -> String {
 
         let mut push_char = |c: char| {
             match c {
-                'a'...'z'|'0'...'9'|'A'...'Z' => {
+                'a'...'z' | '0'...'9' | 'A'...'Z' => {
                     match c {
-                        'a'...'z'|'0'...'9' => output.push(c as u8),
-                        'A'...'Z' => output.push((c as u8)-('A' as u8)+('a' as u8)),
+                        'a'...'z' | '0'...'9' => output.push(c as u8),
+                        'A'...'Z' => output.push((c as u8) - ('A' as u8) + ('a' as u8)),
                         _ => unreachable!(),
                     }
                     dash = false;
-                },
-                _ => if dash {
-                    match c {
-                        '@' => output.extend(b"at-"),
-                        '&' => output.extend(b"and-"),
-                        _ => {}
+                }
+                _ => {
+                    if dash {
+                        match c {
+                            '@' => output.extend(b"at-"),
+                            '&' => output.extend(b"and-"),
+                            _ => {}
+                        }
+                    } else {
+                        match c {
+                            '@' => output.extend(b"-at-"),
+                            '&' => output.extend(b"-and-"),
+                            _ => output.push(b'-'),
+                        }
+                        dash = true;
                     }
-                } else {
-                    match c {
-                        '@' => output.extend(b"-at-"),
-                        '&' => output.extend(b"-and-"),
-                        _ => output.push(b'-'),
-                    }
-                    dash = true;
                 }
             }
         };
