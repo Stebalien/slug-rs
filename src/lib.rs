@@ -63,5 +63,11 @@ pub fn slugify<S: AsRef<str>>(s: S) -> String {
     }
 
     // It's not really unsafe in practice, we know we have ASCII
-    unsafe { String::from_utf8_unchecked(slug) }
+    let mut string = unsafe { String::from_utf8_unchecked(slug) };
+    if string.ends_with('-') {
+        string.pop();
+    }
+    // We likely reserved more space than needed.
+    string.shrink_to_fit();
+    string
 }
