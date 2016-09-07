@@ -20,7 +20,7 @@ use std::ascii::AsciiExt;
 /// ```
 pub fn slugify<S: AsRef<str>>(s: S) -> String {
     let s = s.as_ref();
-    let mut slug = Vec::with_capacity(s.len());
+    let mut slug: Vec<u8> = Vec::with_capacity(s.len());
     // Starts with true to avoid leading -
     let mut prev_is_dash = true;
     {
@@ -28,17 +28,17 @@ pub fn slugify<S: AsRef<str>>(s: S) -> String {
             match x {
                 'a'...'z' | '0'...'9' => {
                     prev_is_dash = false;
-                    slug.push(x);
+                    slug.push(x as u8);
                 },
                 'A'...'Z' => {
                     prev_is_dash = false;
                     // Manual lowercasing as Rust to_lowercase() is unicode
                     // aware and therefore much slower
-                    slug.push(((x as u8) - ('A' as u8) + ('a' as u8)) as char);
+                    slug.push(((x as u8) - ('A' as u8) + ('a' as u8)));
                 },
                 _ => {
                     if !prev_is_dash {
-                        slug.push('-');
+                        slug.push('-' as u8);
                         prev_is_dash = true;
                     }
                 }
@@ -58,9 +58,10 @@ pub fn slugify<S: AsRef<str>>(s: S) -> String {
 
     // Remove trailing / if there is one
     match slug.pop() {
-        Some(c) => { if c != '-' { slug.push(c); } },
+        Some(c) => { if c != '-' as u8 { slug.push(c); } },
         None => ()
     }
 
-    slug.into_iter().collect::<String>()
+    // It's not really unsafe in practice, we know we have ASCII
+    unsafe { String::from_utf8_unchecked(slug) }
 }
