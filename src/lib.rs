@@ -2,7 +2,6 @@ extern crate unidecode;
 
 use unidecode::unidecode_char;
 use std::ascii::AsciiExt;
-use std::iter::FromIterator;
 
 /// Convert any unicode string to an ascii "slug" (useful for file names/url components)
 ///
@@ -20,7 +19,7 @@ use std::iter::FromIterator;
 /// assert_eq!(slugify("user@example.com"), "user-example-com");
 /// ```
 pub fn slugify<S: AsRef<str>>(s: S) -> String {
-    let s = s.as_ref().trim();
+    let s = s.as_ref();
     let mut slug = Vec::with_capacity(s.len());
     // Starts with true to avoid leading -
     let mut prev_is_dash = true;
@@ -43,23 +42,25 @@ pub fn slugify<S: AsRef<str>>(s: S) -> String {
                         prev_is_dash = true;
                     }
                 }
-            };
+            }
         };
 
         for c in s.chars() {
             if c.is_ascii() {
-                push_char(c);
+                (push_char)(c);
             } else {
                 for cx in unidecode_char(c).chars() {
-                    push_char(cx);
+                    (push_char)(cx);
                 }
             }
         }
     }
 
-    let mut res = String::from_iter(slug);
-    if res.ends_with('-') {
-        res.pop();
+    // Remove trailing / if there is one
+    match slug.pop() {
+        Some(c) => { if c != '-' { slug.push(c); } },
+        None => ()
     }
-    res
+
+    slug.into_iter().collect::<String>()
 }
