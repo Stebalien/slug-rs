@@ -56,12 +56,6 @@ pub fn slugify<S: AsRef<str>>(s: S) -> String {
         }
     }
 
-    // Remove trailing / if there is one
-    match slug.pop() {
-        Some(c) => { if c != '-' as u8 { slug.push(c); } },
-        None => ()
-    }
-
     // It's not really unsafe in practice, we know we have ASCII
     let mut string = unsafe { String::from_utf8_unchecked(slug) };
     if string.ends_with('-') {
