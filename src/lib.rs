@@ -1,4 +1,5 @@
 extern crate unidecode;
+
 use unidecode::unidecode_char;
 use std::ascii::AsciiExt;
 
@@ -14,59 +15,52 @@ use std::ascii::AsciiExt;
 /// assert_eq!(slugify("test\nit   now!"), "test-it-now");
 /// assert_eq!(slugify("  --test_-_cool"), "test-cool");
 /// assert_eq!(slugify("Æúű--cool?"), "aeuu-cool");
-/// assert_eq!(slugify("You & Me"), "you-and-me");
-/// assert_eq!(slugify("user@example.com"), "user-at-example-com");
+/// assert_eq!(slugify("You & Me"), "you-me");
+/// assert_eq!(slugify("user@example.com"), "user-example-com");
 /// ```
 pub fn slugify<S: AsRef<str>>(s: S) -> String {
     let s = s.as_ref();
-    let mut string = String::with_capacity(s.len());
+    let mut slug: Vec<u8> = Vec::with_capacity(s.len());
+    // Starts with true to avoid leading -
+    let mut prev_is_dash = true;
     {
-        let output = unsafe { string.as_mut_vec() };
-        let mut dash = true;
-
-        let mut push_char = |c: char| {
-            match c {
-                'a'...'z' | '0'...'9' | 'A'...'Z' => {
-                    match c {
-                        'a'...'z' | '0'...'9' => output.push(c as u8),
-                        'A'...'Z' => output.push((c as u8) - ('A' as u8) + ('a' as u8)),
-                        _ => unreachable!(),
-                    }
-                    dash = false;
-                }
+        let mut push_char = |x: char| {
+            match x {
+                'a'...'z' | '0'...'9' => {
+                    prev_is_dash = false;
+                    slug.push(x as u8);
+                },
+                'A'...'Z' => {
+                    prev_is_dash = false;
+                    // Manual lowercasing as Rust to_lowercase() is unicode
+                    // aware and therefore much slower
+                    slug.push(((x as u8) - ('A' as u8) + ('a' as u8)));
+                },
                 _ => {
-                    if dash {
-                        match c {
-                            '@' => output.extend(b"at-"),
-                            '&' => output.extend(b"and-"),
-                            _ => {}
-                        }
-                    } else {
-                        match c {
-                            '@' => output.extend(b"-at-"),
-                            '&' => output.extend(b"-and-"),
-                            _ => output.push(b'-'),
-                        }
-                        dash = true;
+                    if !prev_is_dash {
+                        slug.push('-' as u8);
+                        prev_is_dash = true;
                     }
                 }
             }
         };
+
         for c in s.chars() {
             if c.is_ascii() {
                 (push_char)(c);
             } else {
-                for c in unidecode_char(c).chars() {
-                    (push_char)(c);
+                for cx in unidecode_char(c).chars() {
+                    (push_char)(cx);
                 }
             }
         }
     }
 
+    // It's not really unsafe in practice, we know we have ASCII
+    let mut string = unsafe { String::from_utf8_unchecked(slug) };
     if string.ends_with('-') {
         string.pop();
     }
-
     // We likely reserved more space than needed.
     string.shrink_to_fit();
     string
