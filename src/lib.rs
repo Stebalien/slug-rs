@@ -1,7 +1,6 @@
 extern crate unidecode;
 
 use unidecode::unidecode_char;
-use std::ascii::AsciiExt;
 
 /// Convert any unicode string to an ascii "slug" (useful for file names/url components)
 ///
@@ -29,13 +28,13 @@ pub fn slugify<S: AsRef<str>>(s: S) -> String {
                 'a'...'z' | '0'...'9' => {
                     prev_is_dash = false;
                     slug.push(x as u8);
-                },
+                }
                 'A'...'Z' => {
                     prev_is_dash = false;
                     // Manual lowercasing as Rust to_lowercase() is unicode
                     // aware and therefore much slower
-                    slug.push(((x as u8) - ('A' as u8) + ('a' as u8)));
-                },
+                    slug.push((x as u8) - ('A' as u8) + ('a' as u8));
+                }
                 _ => {
                     if !prev_is_dash {
                         slug.push('-' as u8);
