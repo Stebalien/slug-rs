@@ -18,7 +18,11 @@ use unidecode::unidecode_char;
 /// assert_eq!(slugify("user@example.com"), "user-example-com");
 /// ```
 pub fn slugify<S: AsRef<str>>(s: S) -> String {
-    let s = s.as_ref();
+    return _slugify(s.as_ref());
+}
+
+// avoid unnecessary monomorphizations
+fn _slugify(s: &str) -> String {
     let mut slug: Vec<u8> = Vec::with_capacity(s.len());
     // Starts with true to avoid leading -
     let mut prev_is_dash = true;
