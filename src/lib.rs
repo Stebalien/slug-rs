@@ -18,7 +18,7 @@ use unidecode::unidecode_char;
 /// assert_eq!(slugify("user@example.com"), "user-example-com");
 /// ```
 pub fn slugify<S: AsRef<str>>(s: S) -> String {
-    return _slugify(s.as_ref());
+    _slugify(s.as_ref())
 }
 
 // avoid unnecessary monomorphizations
@@ -37,11 +37,11 @@ fn _slugify(s: &str) -> String {
                     prev_is_dash = false;
                     // Manual lowercasing as Rust to_lowercase() is unicode
                     // aware and therefore much slower
-                    slug.push((x as u8) - ('A' as u8) + ('a' as u8));
+                    slug.push((x as u8) - b'A' + b'a');
                 }
                 _ => {
                     if !prev_is_dash {
-                        slug.push('-' as u8);
+                        slug.push(b'-');
                         prev_is_dash = true;
                     }
                 }
