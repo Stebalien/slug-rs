@@ -10,7 +10,7 @@ readme = "README.md"
 
 repository = "https://github.com/Stebalien/slug-rs"
 homepage = "https://github.com/Stebalien/slug-rs"
-documentation = "https://stebalien.github.io/slug-rs/slug"
+documentation = "https://docs.rs/slug"
 
 [dependencies]
 unidecode = "0.3"
