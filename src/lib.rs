@@ -1,6 +1,6 @@
-extern crate unidecode;
+extern crate deunicode;
 
-use unidecode::unidecode_char;
+use deunicode::deunicode_char;
 
 /// Convert any unicode string to an ascii "slug" (useful for file names/url components)
 ///
@@ -52,7 +52,7 @@ fn _slugify(s: &str) -> String {
             if c.is_ascii() {
                 (push_char)(c);
             } else {
-                for cx in unidecode_char(c).chars() {
+                for cx in deunicode_char(c).unwrap_or("-").chars() {
                     (push_char)(cx);
                 }
             }
