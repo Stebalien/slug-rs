@@ -27,17 +27,17 @@ fn _slugify(s: &str) -> String {
     // Starts with true to avoid leading -
     let mut prev_is_dash = true;
     {
-        let mut push_char = |x: char| {
+        let mut push_char = |x: u8| {
             match x {
-                'a'...'z' | '0'...'9' => {
+                b'a'...b'z' | b'0'...b'9' => {
                     prev_is_dash = false;
-                    slug.push(x as u8);
+                    slug.push(x);
                 }
-                'A'...'Z' => {
+                b'A'...b'Z' => {
                     prev_is_dash = false;
                     // Manual lowercasing as Rust to_lowercase() is unicode
                     // aware and therefore much slower
-                    slug.push((x as u8) - b'A' + b'a');
+                    slug.push(x - b'A' + b'a');
                 }
                 _ => {
                     if !prev_is_dash {
@@ -50,9 +50,9 @@ fn _slugify(s: &str) -> String {
 
         for c in s.chars() {
             if c.is_ascii() {
-                (push_char)(c);
+                (push_char)(c as u8);
             } else {
-                for cx in deunicode_char(c).unwrap_or("-").chars() {
+                for &cx in deunicode_char(c).unwrap_or("-").as_bytes() {
                     (push_char)(cx);
                 }
             }
