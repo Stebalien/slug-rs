@@ -13,4 +13,4 @@ homepage = "https://github.com/Stebalien/slug-rs"
 documentation = "https://docs.rs/slug"
 
 [dependencies]
-deunicode = "0.4.0"
+deunicode = "1"
