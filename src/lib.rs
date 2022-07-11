@@ -8,43 +8,59 @@ use deunicode::deunicode_char;
 /// never contain more than one '-' in a row and will never start or end with '-'.
 ///
 /// ```rust
-/// use self::slug::slugify;
+/// use self::slug::{slugify, Case};
 ///
-/// assert_eq!(slugify("My Test String!!!1!1", "_"), "my_test_string_1_1");
-/// assert_eq!(slugify("test\nit   now!", "*"), "test*it*now");
-/// assert_eq!(slugify("  --test_-_cool", "-"), "test-cool");
-/// assert_eq!(slugify("Æúű--cool?", "-"), "aeuu-cool");
-/// assert_eq!(slugify("You & Me", "-"), "you-me");
-/// assert_eq!(slugify("user@example.com", "-"), "user-example-com");
+/// assert_eq!(slugify("My Test String!!!1!1", "_", None), "My_Test_String_1_1");
+/// assert_eq!(slugify("test\nit   now!", "*", Some(Case::Upper)), "TEST*IT*NOW");
+/// assert_eq!(slugify("  --TEST-_COOL", "-", Some(Case::Lower)), "test-cool");
+/// assert_eq!(slugify("Æúű--cool?", "-", None), "AEuu-cool");
+/// assert_eq!(slugify("You & Me", "-", Some(Case::Lower)), "you-me");
+/// assert_eq!(slugify("user@example.com", "-", Some(Case::Upper)), "USER-EXAMPLE-COM");
+/// assert_eq!(slugify("遊戲", "-", None), "You-Xi");
 /// ```
-pub fn slugify<S: AsRef<str>, T: AsRef<str>>(s: S, sep: T) -> String {
-    _slugify(s.as_ref(), sep.as_ref())
+
+pub enum Case {
+    Lower,
+    Upper,
+}
+
+pub fn slugify<S: AsRef<str>, T: AsRef<str>>(s: S, sep: T, transform: Option<Case>) -> String {
+    _slugify(s.as_ref(), sep.as_ref(), transform)
 }
 
 // avoid unnecessary monomorphizations
-fn _slugify(s: &str, sep: &str) -> String {
+fn _slugify(s: &str, sep: &str, transform: Option<Case>) -> String {
     let mut slug: Vec<u8> = Vec::with_capacity(s.len());
     let sep_char: Vec<char> = sep.chars().collect();
     // Starts with true to avoid leading -
     let mut prev_is_dash = true;
     {
-        let mut push_char = |x: u8| {
-            match x {
-                b'a'..=b'z' | b'0'..=b'9' => {
-                    prev_is_dash = false;
+        let mut push_char = |x: u8| match x {
+            b'a'..=b'z' => {
+                prev_is_dash = false;
+
+                if let Some(Case::Upper) = transform {
+                    slug.push(x.to_ascii_uppercase());
+                } else {
                     slug.push(x);
                 }
-                b'A'..=b'Z' => {
-                    prev_is_dash = false;
-                    // Manual lowercasing as Rust to_lowercase() is unicode
-                    // aware and therefore much slower
-                    slug.push(x - b'A' + b'a');
+            }
+            b'A'..=b'Z' => {
+                prev_is_dash = false;
+                if let Some(Case::Lower) = transform {
+                    slug.push(x.to_ascii_lowercase());
+                } else {
+                    slug.push(x);
                 }
-                _ => {
-                    if !prev_is_dash {
-                        slug.push(sep_char[0] as u8);
-                        prev_is_dash = true;
-                    }
+            }
+            b'0'..=b'9' => {
+                prev_is_dash = false;
+                slug.push(x);
+            }
+            _ => {
+                if !prev_is_dash {
+                    slug.push(sep_char[0] as u8);
+                    prev_is_dash = true;
                 }
             }
         };

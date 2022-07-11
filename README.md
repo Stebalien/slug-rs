@@ -10,5 +10,5 @@ Documentation: https://docs.rs/slug
 extern crate slug;
 use slug::slugify;
 
-let slug = slugify("Hello world");
+let slug = slugify("Hello world", "-", None); // "Hello-world"
 ```
