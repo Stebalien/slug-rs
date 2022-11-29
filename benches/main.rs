@@ -19,7 +19,9 @@ fn bench_slug_normal(b: &mut test::Bencher) {
     b.iter(|| {
         test::black_box(slugify(test::black_box("My test Slug!!")));
         test::black_box(slugify(test::black_box("Some other.. slug")));
-        test::black_box(slugify(test::black_box("CAPSLOCK IS AN AUTOPILOT FOR COOL")));
+        test::black_box(slugify(test::black_box(
+            "CAPSLOCK IS AN AUTOPILOT FOR COOL",
+        )));
     })
 }
 

@@ -1,6 +1,6 @@
-extern crate deunicode;
-
 use deunicode::deunicode_char;
+#[cfg(target_family = "wasm")]
+use wasm_bindgen::prelude::*;
 
 /// Convert any unicode string to an ascii "slug" (useful for file names/url components)
 ///
@@ -21,6 +21,13 @@ pub fn slugify<S: AsRef<str>>(s: S) -> String {
     _slugify(s.as_ref())
 }
 
+#[doc(hidden)]
+#[cfg(target_family = "wasm")]
+#[wasm_bindgen(js_name = slugify)]
+pub fn slugify_owned(s: String) -> String {
+    _slugify(s.as_ref())
+}
+
 // avoid unnecessary monomorphizations
 fn _slugify(s: &str) -> String {
     let mut slug: Vec<u8> = Vec::with_capacity(s.len());
@@ -29,11 +36,11 @@ fn _slugify(s: &str) -> String {
     {
         let mut push_char = |x: u8| {
             match x {
-                b'a'...b'z' | b'0'...b'9' => {
+                b'a'..=b'z' | b'0'..=b'9' => {
                     prev_is_dash = false;
                     slug.push(x);
                 }
-                b'A'...b'Z' => {
+                b'A'..=b'Z' => {
                     prev_is_dash = false;
                     // Manual lowercasing as Rust to_lowercase() is unicode
                     // aware and therefore much slower
