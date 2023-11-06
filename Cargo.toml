@@ -1,7 +1,7 @@
 [package]
 name = "slug"
 keywords = ["slugify", "slug", "id"]
-version = "0.1.4"
+version = "0.1.5"
 authors = ["Steven Allen <steven@stebalien.com>"]
 edition = "2021"
 description = "Convert a unicode string to a slug"
