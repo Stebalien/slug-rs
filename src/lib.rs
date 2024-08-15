@@ -30,7 +30,7 @@ pub fn slugify_owned(s: String) -> String {
 
 // avoid unnecessary monomorphizations
 fn _slugify(s: &str) -> String {
-    let mut slug: Vec<u8> = Vec::with_capacity(s.len());
+    let mut slug = String::with_capacity(s.len());
     // Starts with true to avoid leading -
     let mut prev_is_dash = true;
     {
@@ -38,17 +38,17 @@ fn _slugify(s: &str) -> String {
             match x {
                 b'a'..=b'z' | b'0'..=b'9' => {
                     prev_is_dash = false;
-                    slug.push(x);
+                    slug.push(x.into());
                 }
                 b'A'..=b'Z' => {
                     prev_is_dash = false;
                     // Manual lowercasing as Rust to_lowercase() is unicode
                     // aware and therefore much slower
-                    slug.push(x - b'A' + b'a');
+                    slug.push((x - b'A' + b'a').into());
                 }
                 _ => {
                     if !prev_is_dash {
-                        slug.push(b'-');
+                        slug.push('-');
                         prev_is_dash = true;
                     }
                 }
@@ -66,12 +66,10 @@ fn _slugify(s: &str) -> String {
         }
     }
 
-    // It's not really unsafe in practice, we know we have ASCII
-    let mut string = unsafe { String::from_utf8_unchecked(slug) };
-    if string.ends_with('-') {
-        string.pop();
+    if slug.ends_with('-') {
+        slug.pop();
     }
     // We likely reserved more space than needed.
-    string.shrink_to_fit();
-    string
+    slug.shrink_to_fit();
+    slug
 }
