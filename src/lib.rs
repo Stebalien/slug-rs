@@ -18,18 +18,46 @@ use wasm_bindgen::prelude::*;
 /// assert_eq!(slugify("user@example.com"), "user-example-com");
 /// ```
 pub fn slugify<S: AsRef<str>>(s: S) -> String {
-    _slugify(s.as_ref())
+    let opts = Options::default();
+    slugify_with_options(s.as_ref(), &opts)
 }
 
 #[doc(hidden)]
 #[cfg(target_family = "wasm")]
 #[wasm_bindgen(js_name = slugify)]
 pub fn slugify_owned(s: String) -> String {
-    _slugify(s.as_ref())
+    slugify(s.as_ref())
 }
 
-// avoid unnecessary monomorphizations
-fn _slugify(s: &str) -> String {
+#[derive(Clone, Debug)]
+pub struct Options {
+    pub separator: char,
+}
+
+impl Default for Options {
+    fn default() -> Self {
+        Self { separator: '-' }
+    }
+}
+
+impl Options {
+    /// Sets the delimiter used for slugging
+    pub fn with_separator(mut self, separator: char) -> Self {
+        self.separator = separator;
+        self
+    }
+}
+
+/// Convert any unicode string to an ascii "slug" with some options
+///
+/// ```rust
+/// use self::slug::{slugify_with_options, Options};
+///
+/// let opts = Options::default().with_separator('_');
+///
+/// assert_eq!(slugify_with_options("My Test String!!!1!!!!1", &opts), "my_test_string_1_1");
+/// ```
+pub fn slugify_with_options(s: &str, opts: &Options) -> String {
     let mut slug = String::with_capacity(s.len());
     // Starts with true to avoid leading -
     let mut prev_is_dash = true;
@@ -48,7 +76,7 @@ fn _slugify(s: &str) -> String {
                 }
                 _ => {
                     if !prev_is_dash {
-                        slug.push('-');
+                        slug.push(opts.separator);
                         prev_is_dash = true;
                     }
                 }
